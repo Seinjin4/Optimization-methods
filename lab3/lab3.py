@@ -16,12 +16,6 @@ h1 = - x;
 h2 = - y;
 h3 = - z;
 
-# fl= lambdify([x,y,z],f)
-
-# gl = [lambdify([x,y,z],g1)]
-
-# hl = [lambdify([x,y,z],h1), lambdify([x,y,z],h2), lambdify([x,y,z],h3)]
-
 B_with_r = f + 1/r * (g1**2 + Max(0, h1)**2 + Max(0, h2)**2 +  Max(0, h3)**2)
 
 def calc_function(func, point):
@@ -154,6 +148,7 @@ def baudos_metodas(B_with_r, x0, r = 10, C = 10, e = 0.0001):
     xNewList.append(xnew)
 
     while(true):
+        iterations += 1
         r = r/C
         x0 = xnew
         B = sub_r(B_with_r, r)
@@ -176,17 +171,52 @@ def baudos_metodas(B_with_r, x0, r = 10, C = 10, e = 0.0001):
 
 def compute_min(X):
 	print("Pradzios taskas: ", X);
-	print("Rastas minimumas: ", baudos_metodas(B_with_r, X, 10, 2));
+	print("Rastas minimumas: ", baudos_metodas(B_with_r, X, 2, 10));
+
+lamf = lambdify([x,y,z], f)
+lamg1 = lambdify([x,y,z], g1)
+lamh1 = lambdify([x,y,z], h1)
+lamh2 = lambdify([x,y,z], h2)
+lamh3 = lambdify([x,y,z], h3)
+lamB = lambdify([x,y,z,r], B_with_r)
+
+def calc(x):
+  print(lamg1(x.x, x.y, x.z))
+  print(lamh1(x.x, x.y, x.z))
+  print(lamh2(x.x, x.y, x.z))
+  print(lamh3(x.x, x.y, x.z))
+  print(lamf(x.x, x.y, x.z))
+
+def calc_r_cignificants(x_list, range):
+
+  rList = []
+  x0List = []
+  x1List = []
+  xmList = []
+
+  for i in range:
+    rList.append(i)
+    x0List.append(lamB(x_list[0].x, x_list[0].y, x_list[0].z, i))
+    x1List.append(lamB(x_list[1].x, x_list[1].y, x_list[1].z, i))
+    xmList.append(lamB(x_list[2].x, x_list[2].y, x_list[2].z, i))
+
+  df = DataFrame({'r': rList, 'x0': x0List, 'x1': x1List, 'xm': xmList})
+  df.to_excel('output1.xlsx', sheet_name='sheet1')
 
 def main():
-	X0 = vmath.Vector3(0, 0, 0);
-	X1 = vmath.Vector3(1, 1, 1);
-	a,b,c = 9, 5, 6;
-	Xm = vmath.Vector3(a/10, b/10, c/10);
-	Xmin = vmath.Vector3(math.sqrt(1/6), math.sqrt(1/6), math.sqrt(1/6));
+  X0 = vmath.Vector3(0, 0, 0);
+  X1 = vmath.Vector3(1, 1, 1);
+  a,b,c = 9, 5, 6;
+  Xm = vmath.Vector3(a/10, b/10, c/10);
+  Xmin = vmath.Vector3(math.sqrt(1/6), math.sqrt(1/6), math.sqrt(1/6));
 
-	compute_min(Xm)
+  compute_min(X0)
 
+  # print(B_with_r)
+
+  #calc_r_cignificants([X0, X1, Xm], range(1, 100))
+
+  #calc(Xm)
 
 if __name__ == "__main__":
     main()
